@@ -31,9 +31,15 @@ class UserPermissionsView(View):
             )
         filters = self._get_filters(request)
         result = permissions.Permissions.permissions_for_user(user=request.user, **filters)
+
+        bundled = request.GET.get('bundled', True)
+
+        if bundled and bundled == 'False':
+            bundled = False
+
         return JsonResponse(
             status=200,
-            data=Converter.serialize_rules(result),
+            data=Converter.serialize_rules(result, bundled=bundled),
             safe=False
         )
 

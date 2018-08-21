@@ -62,3 +62,23 @@ def default_permissions_to_casl_rule(permissions: list = None, subject: str = No
     rule['subject'] = subject
     rule['actions'] = actions
     return rule
+
+
+def casl_permissions_to_casl_rule(permissions: list = None, subject: str = None) -> dict:
+    """
+    Given a list of CASLPermissions, return a rule that has all the actions specified for it
+
+    :param permissions:
+    :param subject:
+    :return:
+    """
+    assert (permissions is not None), "Expected a list, got None"
+    actions = []
+    for permission in permissions:
+        if not subject:
+            subject = permission.subject
+        actions.append(permission.action)
+    return {
+        'subject': subject,
+        'actions': actions
+    }
