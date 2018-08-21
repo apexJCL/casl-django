@@ -19,3 +19,9 @@ local/
 !.coveragerc
 !.gitignore
 !.travis.yml
+
+
+/casl/
+manage.py
+db.sqlite3
+/items/

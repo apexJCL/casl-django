@@ -19,6 +19,12 @@ class CASLPermission(models.Model):
             'action': self.action
         }
 
+    def __str__(self):
+        return "{subject} -> {action}".format(
+            subject=self.subject.capitalize(),
+            action=self.action
+        )
+
 
 class UserPermission(models.Model):
     """
