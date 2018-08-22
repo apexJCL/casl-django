@@ -15,7 +15,7 @@ setup(
     license='MIT License',
     description='Django module for converting regular django permissions to CASL-Style rules',
     long_description=README,
-    url='',
+    url='https://github.com/apexJCL/casl-django',
     author='José Carlos López',
     author_email='carlos@nopalcreativa.com',
     classifiers=[
