@@ -13,6 +13,24 @@ class Converter(object):
         return rules
 
     @staticmethod
+    def serialize_django_permissions(permissions: dict):
+        """
+        Given a dict of django permissions, the dict must be
+
+        {
+            Content-Type: [Permission, Permission]
+        }
+
+        :param permissions: List of permissions
+        :param bundled: If the rules must be bundled, ex: subject: 'payments', actions: ['add', 'cancel', 'change']
+        :return:
+        """
+        rules = []
+        for content_type, permissions in permissions.items():
+            rules.append(default_permissions_to_casl_rule(permissions))
+        return rules
+
+    @staticmethod
     def serialize_rules(permissions, bundled: bool = True):
         """
         Given a queryset of CASLPermissions, return a list

@@ -1,3 +1,5 @@
+from django.contrib.auth.models import AbstractUser
+
 from .converter import Converter
 from ..models import CASLPermission
 
@@ -33,3 +35,25 @@ class Permissions:
         return permission.userpermission_set.create(
             user=user
         )
+
+    @classmethod
+    def get_user_django_permissions(cls, user: AbstractUser = None):
+        """
+        Converts the user permission's to CASL-like rules.
+
+        You can restrict the result given the permissions based on the model, group or directly assigned level.
+
+        :param user: User
+        :return:
+        """
+        perms = {}
+        for group in user.groups.all():
+            for permission in group.permissions.all():
+                if permission.content_type not in perms:
+                    perms[permission.content_type] = []
+                perms[permission.content_type].append(permission)
+        for permission in user.user_permissions.all():
+            if permission.content_type not in perms:
+                perms[permission.content_type] = []
+            perms[permission.content_type].append(permission)
+        return Converter.serialize_django_permissions(perms)
