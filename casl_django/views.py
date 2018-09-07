@@ -29,17 +29,11 @@ class UserPermissionsView(View):
                     'message': 'No user detected in the current session'
                 }
             )
-        filters = self._get_filters(request)
-        result = permissions.Permissions.permissions_for_user(user=request.user, **filters)
-
-        bundled = request.GET.get('bundled', True)
-
-        if bundled and bundled == 'False':
-            bundled = False
+        result = permissions.Permissions.user_permissions(user=request.user)
 
         return JsonResponse(
             status=200,
-            data=Converter.serialize_rules(result, bundled=bundled),
+            data=result,
             safe=False
         )
 

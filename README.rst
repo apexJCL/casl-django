@@ -70,20 +70,6 @@ can add to your user using the Permission's `add_permission` class method::
 
 Or you can import `casl_django.models.UserPermission` and create objects as desired.
 
-
-Filtering
----------
-
-The view by default filters `subject` with `iexact` and action with `icontains`,
-you can call the url with: `?subject=navigation&action=users-roles`, this would
-return::
-
-    [
-        {"subject": "navigation", action: "user-roles-index"},
-        {"subject": "navigation", action: "user-roles-list"},
-        {"subject": "navigation", action: "user-roles-id"}
-    ]
-
 Quick start
 -----------
 
@@ -94,12 +80,31 @@ Quick start
         'casl_django',
     ]
 
-2. Use the included views to generate your desired urls::
+2. Run `python manage.py migrate` to create the models.
 
-    from casl_django.views import UserPermissionsView
 
-    ...
+API
+---
 
-    url(r'/api/casl/user/', UserPermissionsView.as_view())
+By default, your user object should contain a related relationship called `casl_permissions`.
+You can filter by `permission__subject` and `permission__action` and finally get the rules with
+the queryset method `bundle()`.
 
-3. Run `python manage.py migrate` to create the models.
+--------
+bundle()
+--------
+
+This method it's included in the QuerySet's for `UserPermissions` (user.casl_permissions) and for
+`CASLPermission` (CASLPermission.objects).
+
+This method returns a list like the following::
+
+    [
+        // These are regular django permissions transformed to CASL-Style rules
+        {'subject': 'products/item', actions: ['add', 'change']},
+        // These are CASLPermissions objects
+        {'subject': 'navigation', actions: ['index', 'products']}
+    ]
+
+The bundle consists in grouping same-subject rules and the actions, having less data
+to send over the wire.

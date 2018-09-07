@@ -1,32 +1,6 @@
-from django.contrib.auth.models import Permission, ContentType
+from django.contrib.auth.models import Permission, User
 
-
-def _default_content_type_to_subject(content_type: ContentType) -> str:
-    """
-    Given a permission with a content type, define the subject naming convention.
-
-    Ex:
-
-    App called "products" and your model is called "item",
-    this will create a subject called 'products/item'
-
-    :param content_type:
-    :return:
-    """
-    return "{app_label}/{model}".format(
-        app_label=content_type.app_label,
-        model=content_type.model
-    )
-
-
-def _default_permission_codename_to_action(permission: Permission) -> str:
-    """
-    Given an standard Django permission, return the action that has been specified to it
-
-    :param permission:
-    :return:
-    """
-    return permission.codename[:permission.codename.find('_')]
+from casl_django.casl.casl import default_content_type_to_subject, default_permission_codename_to_action
 
 
 def default_permission_to_casl_rule(permission: Permission) -> dict:
@@ -37,8 +11,8 @@ def default_permission_to_casl_rule(permission: Permission) -> dict:
     :return:
     """
     return {
-        'subject': _default_content_type_to_subject(permission.content_type),
-        'action': _default_permission_codename_to_action(permission)
+        'subject': default_content_type_to_subject(permission.content_type),
+        'action': default_permission_codename_to_action(permission)
     }
 
 
@@ -57,8 +31,8 @@ def default_permissions_to_casl_rule(permissions: list = None, subject: str = No
     actions = []
     for permission in permissions:
         if not subject:
-            subject = _default_content_type_to_subject(permission.content_type)
-        actions.append(_default_permission_codename_to_action(permission))
+            subject = default_content_type_to_subject(permission.content_type)
+        actions.append(default_permission_codename_to_action(permission))
     rule['subject'] = subject
     rule['actions'] = actions
     return rule
@@ -82,3 +56,30 @@ def casl_permissions_to_casl_rule(permissions: list = None, subject: str = None)
         'subject': subject,
         'actions': actions
     }]
+
+
+def django_permission_to_casl_rule(permission: Permission, subject: str = None):
+    """
+    Converts a permission to a casl rule
+
+    :param permission:
+    :param subject:
+    :return:
+    """
+    rule = dict()
+    rule['subject'] = subject if subject else default_content_type_to_subject(permission.content_type)
+    rule['actions'] = default_permission_codename_to_action(permission)
+    return rule
+
+
+def get_user_inherited_permissions(user: User):
+    """
+    Returns all the permissions the user inherits by it's group
+
+    :param user:
+    :return:
+    """
+    perms = []
+    for group in user.groups.all():
+        perms.append(group.permissions.all())
+    return perms

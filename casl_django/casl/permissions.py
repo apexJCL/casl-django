@@ -1,59 +1,33 @@
-from django.contrib.auth.models import AbstractUser
-
-from .converter import Converter
-from ..models import CASLPermission
+from casl_django.casl import casl, utils
 
 
 class Permissions:
-    @classmethod
-    def default_permissions(cls):
+    @staticmethod
+    def user_permissions(user, django_perms_filter: dict = None, casl_permissions_filter: dict = None) -> list:
         """
-        Returns the default defined permissions on Django Permissions
+        Given a user, return all of their permissions as casl-rule-style dicts.
 
-        :return:
-        """
-        return Converter.default_permissions()
+        The list will contain dicts shaped as the casl object.
 
-    @classmethod
-    def custom_permissions(cls):
-        """
-        Returns the default custom permissions queryset implemented on Django
-        :return:
-        """
-        return CASLPermission.objects.all()
-
-    @classmethod
-    def create(cls, subject: str, action: str):
-        return CASLPermission.objects.create(subject=subject, action=action)
-
-    @classmethod
-    def permissions_for_user(cls, user, **kwargs):
-        return CASLPermission.objects.filter(userpermission__user=user, **kwargs)
-
-    @classmethod
-    def set_user_permission(cls, user, permission: CASLPermission):
-        return permission.userpermission_set.create(
-            user=user
-        )
-
-    @classmethod
-    def get_user_django_permissions(cls, user: AbstractUser = None):
-        """
-        Converts the user permission's to CASL-like rules.
-
-        You can restrict the result given the permissions based on the model, group or directly assigned level.
+        [{subject: 'something', actions: ['a1', 'a2', 'a3']}]
 
         :param user: User
+        :param django_perms_filter: Filtering options for the django permissions queryset
+        :param casl_permissions_filter: Filtering options for the casl permissions queryset
+
         :return:
         """
-        perms = {}
-        for group in user.groups.all():
-            for permission in group.permissions.all():
-                if permission.content_type not in perms:
-                    perms[permission.content_type] = []
-                perms[permission.content_type].append(permission)
-        for permission in user.user_permissions.all():
-            if permission.content_type not in perms:
-                perms[permission.content_type] = []
-            perms[permission.content_type].append(permission)
-        return Converter.serialize_django_permissions(perms)
+        if not django_perms_filter:
+            django_perms_filter = dict()
+        if not casl_permissions_filter:
+            casl_permissions_filter = dict()
+
+        # List
+        user_direct_permissions = casl.django_permissions_to_casl_rules(
+            user.user_permissions.filter(**django_perms_filter)
+        )
+        # List 2
+        user_inherited_permissions = utils.get_user_inherited_permissions(user)
+        # List 3
+        user_casl_permissions = user.casl_permissions.filter(**casl_permissions_filter).bundled()
+        return user_direct_permissions + user_inherited_permissions + user_casl_permissions
