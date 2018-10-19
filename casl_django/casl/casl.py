@@ -42,7 +42,8 @@ def default_permission_codename_to_action(permission: Permission) -> str:
     :param permission:
     :return:
     """
-    return permission.codename[:permission.codename.rfind('_')]
+    model_name: str = '_{}'.format(permission.content_type.model)
+    return permission.codename[:permission.codename.rfind(model_name)]
 
 
 def django_permissions_to_casl_rules(permissions: list) -> list:
