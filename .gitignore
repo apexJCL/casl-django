@@ -25,3 +25,4 @@ local/
 manage.py
 db.sqlite3
 /items/
+casl-django.iml
