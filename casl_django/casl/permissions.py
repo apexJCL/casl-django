@@ -27,7 +27,8 @@ class Permissions:
             user.user_permissions.filter(**django_perms_filter)
         )
         # List 2
-        user_inherited_permissions = utils.get_user_inherited_permissions(user)
+        user_inherited_permissions = casl.django_permissions_to_casl_rules(utils.get_user_inherited_permissions(user))
+
         # List 3
         user_casl_permissions = user.casl_permissions.filter(**casl_permissions_filter).bundled()
         return user_direct_permissions + user_inherited_permissions + user_casl_permissions

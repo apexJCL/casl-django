@@ -81,5 +81,5 @@ def get_user_inherited_permissions(user: User):
     """
     perms = []
     for group in user.groups.all():
-        perms.append(group.permissions.all())
+        perms += list(group.permissions.all())
     return perms
